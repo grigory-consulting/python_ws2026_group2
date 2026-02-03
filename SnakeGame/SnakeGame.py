@@ -1,19 +1,25 @@
 import random
+import msvcrt # for windows capture keys from keyboard
+import time 
+import os 
 
 
-WIDTH = 20
-HEIGHT = 12 
+WIDTH = 40
+HEIGHT = 24 
 
 class SnakeGame:
     def __init__(self):
         self.direction = (1,0) # (-1,0) -> left, (0,-1) -> up, (0,1) -> down 
-        self.speed = 0.3 # later  
+        self.delay = 0.15 # initial delay   
         self.snake = [
             (WIDTH/2, HEIGHT/2), # 10, 6 -> 
             ]
         self.apple = self.new_apple() 
         self.points = 0 # integer
         self.game_over = False # boolean
+
+    def clear_screen(self):
+        os.system("cls")
 
     def new_apple(self): # will return new point 
         while True:
@@ -22,7 +28,7 @@ class SnakeGame:
                 return apple 
     
     def draw(self):
-        print("SNAKE GAME")
+        self.clear_screen()
         print("+" + "-"*WIDTH + "+") # upper boundary of the board
         for y in range(HEIGHT):
             print("|", end="")  
@@ -53,14 +59,34 @@ class SnakeGame:
         if new_head == self.apple:
             self.points +=1
             self.apple = self.new_apple()
-        else:
-            self.apple.pop() # remove last element
+            if self.points % 5 == 0: # every 5 points we increase the speed
+                self.delay -= 0.01
 
+        else:
+            self.snake.pop() # remove last element
+    
+    def input(self):
+        if msvcrt.kbhit():
+            key = msvcrt.getch().decode().lower()
+            if key == "q":
+                self.game_over = True
+            elif key == "w" and self.direction != (0,1):
+                self.direction = (0,-1)
+            elif key == "a" and self.direction != (1,0):
+                self.direction = (-1,0)
+            elif key == "d" and self.direction != (-1, 0):
+                self.direction = (1,0)
+            elif key == "s" and self.direction != (0,-1):
+                self.direction = (0,1)
 
     
     def run(self):
-        self.draw()
-        
+        print("SNAKE GAME")
+        while not self.game_over:
+            self.draw()
+            time.sleep(self.delay)
+            self.input()
+            self.update()
         
 game = SnakeGame()
 game.run()
